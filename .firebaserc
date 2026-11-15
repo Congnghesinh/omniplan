@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "default": "planning-with-ai-4e4a8"
+  },
+  "targets": {
+    "planning-with-ai-4e4a8": {
+      "hosting": {
+        "omniplan": [
+          "omniplan"
+        ]
+      }
+    }
+  }
+}
