@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "target": "omniplan",
     "public": "dist",
     "ignore": [
       "firebase.json",
