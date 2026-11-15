@@ -10,6 +10,9 @@ import { AIChatView } from './components/chat/AIChatView.js';
 import { AISettingsView } from './components/settings/AISettingsView.js';
 import { FeedbackCenterView } from './components/feedback/FeedbackCenterView.js';
 import { FeedbackModal } from './components/feedback/FeedbackModal.js';
+import { OmniSearchModal } from './components/omni/OmniSearchModal.js';
+import { OmniGoalsView } from './components/omni/OmniGoalsView.js';
+import { OmniInsightsView } from './components/omni/OmniInsightsView.js';
 import { ApiService } from './services/api.js';
 import { AIPersonalityId, TaskItem, HealthRecord } from './types/index.js';
 
@@ -20,6 +23,7 @@ export const App: React.FC = () => {
   const [zaloLinked, setZaloLinked] = useState<boolean>(false);
   const [chatPrompt, setChatPrompt] = useState<string>('');
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState<boolean>(false);
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState<boolean>(false);
 
   // Domain data
   const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -152,6 +156,10 @@ export const App: React.FC = () => {
         return 'Công việc & Nhiệm vụ';
       case 'finance':
         return 'Tài chính Cá nhân';
+      case 'goals':
+        return 'Mục tiêu Cuộc sống (OmniGoals)';
+      case 'insights':
+        return 'Phân tích Đa lĩnh vực (OmniInsights)';
       case 'feedback':
         return 'Góp ý & Hỗ trợ';
       case 'chat':
@@ -180,6 +188,7 @@ export const App: React.FC = () => {
           onOpenChat={() => setCurrentTab('chat')}
           onOpenZaloModal={() => setCurrentTab('settings')}
           onOpenFeedbackModal={() => setIsFeedbackModalOpen(true)}
+          onOpenSearch={() => setIsSearchModalOpen(true)}
           zaloLinked={zaloLinked}
         />
 
@@ -226,6 +235,18 @@ export const App: React.FC = () => {
             />
           )}
 
+          {currentTab === 'goals' && (
+            <OmniGoalsView
+              onOpenChatWithPrompt={handleOpenChatWithPrompt}
+            />
+          )}
+
+          {currentTab === 'insights' && (
+            <OmniInsightsView
+              onOpenChatWithPrompt={handleOpenChatWithPrompt}
+            />
+          )}
+
           {currentTab === 'feedback' && (
             <FeedbackCenterView
               onOpenSubmitModal={() => setIsFeedbackModalOpen(true)}
@@ -253,6 +274,21 @@ export const App: React.FC = () => {
             />
           )}
         </main>
+
+        {/* Global OmniSearch Modal (Ctrl + K) */}
+        <OmniSearchModal
+          isOpen={isSearchModalOpen}
+          onClose={() => setIsSearchModalOpen(false)}
+          onNavigateTab={(tab) => setCurrentTab(tab)}
+        />
+
+        {/* Global Feedback Modal */}
+        <FeedbackModal
+          isOpen={isFeedbackModalOpen}
+          onClose={() => setIsFeedbackModalOpen(false)}
+          currentModule={getTabLabel(currentTab)}
+          onFeedbackSubmitted={loadAllData}
+        />
 
         {/* Global Feedback Modal */}
         <FeedbackModal

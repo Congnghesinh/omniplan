@@ -1,11 +1,12 @@
 import React from 'react';
-import { Bot, Bell, Sparkles, MessageCircle, Moon, Sun, Smartphone, MessageSquarePlus } from 'lucide-react';
+import { Bot, Bell, Sparkles, MessageCircle, Moon, Sun, Smartphone, MessageSquarePlus, Search } from 'lucide-react';
 
 interface HeaderProps {
   currentTabLabel: string;
   onOpenChat: () => void;
   onOpenZaloModal: () => void;
   onOpenFeedbackModal: () => void;
+  onOpenSearch?: () => void;
   zaloLinked: boolean;
   unreadCount?: number;
 }
@@ -15,6 +16,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenChat,
   onOpenZaloModal,
   onOpenFeedbackModal,
+  onOpenSearch,
   zaloLinked,
   unreadCount = 0
 }) => {
@@ -33,6 +35,32 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       <div className="omni-topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* OmniSearch Global Search Button */}
+        {onOpenSearch && (
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '7px 14px',
+              borderRadius: '20px',
+              fontSize: '12px',
+              fontWeight: 600,
+              cursor: 'pointer',
+              border: '1px solid #d1ded5',
+              background: '#f4f7f5',
+              color: '#103b2d'
+            }}
+            title="Tìm kiếm thông minh toàn hệ thống (Ctrl + K)"
+          >
+            <Search size={14} color="#103b2d" />
+            <span>OmniSearch</span>
+            <kbd style={{ fontSize: '10px', background: '#ffffff', padding: '1px 5px', borderRadius: '4px', border: '1px solid #ccd8cf', color: '#666' }}>Ctrl K</kbd>
+          </button>
+        )}
+
         {/* Global Feedback & Bug Report Button */}
         <button
           type="button"
