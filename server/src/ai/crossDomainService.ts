@@ -97,3 +97,4 @@ export class CrossDomainService {
     return insights;
   }
 }
+

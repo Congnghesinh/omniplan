@@ -787,6 +787,268 @@ app.put('/api/notifications/:id/read', (req: Request, res: Response) => {
   res.json({ success: ok });
 });
 
+// ==========================================
+// 12. OMNISEARCH & OMNIGOALS
+// ==========================================
+app.get('/api/search', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const q = ((req.query.q as string) || '').toLowerCase().trim();
+
+  if (!q) {
+    return res.json({ tasks: [], transactions: [], flashcards: [], memories: [] });
+  }
+
+  const tasks = db.getTasks(userId).filter(t => t.title.toLowerCase().includes(q));
+  const transactions = db.getTransactions(userId).filter(t =>
+    (t.note || '').toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+  );
+  const flashcards = db.getFlashcards(userId).filter(f =>
+    f.front.toLowerCase().includes(q) || f.back.toLowerCase().includes(q)
+  );
+  const memories = db.getMemories(userId).filter(m =>
+    m.key.toLowerCase().includes(q) || m.value.toLowerCase().includes(q)
+  );
+
+  res.json({ tasks, transactions, flashcards, memories });
+});
+
+app.get('/api/goals', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const profile = db.getUserProfile(userId);
+  const memories = db.getMemories(userId).filter(m => m.type === 'goal');
+  const budgets = db.getBudgets(userId);
+
+  res.json({
+    healthGoals: {
+      waterGoalMl: profile.waterGoalMl,
+      calorieGoal: profile.calorieGoal
+    },
+    financialGoals: budgets.map(b => ({
+      category: b.category,
+      targetLimit: b.limitAmount,
+      spent: b.spentAmount
+    })),
+    customGoals: memories
+  });
+});
+
+// ==========================================
+// 13. FEEDBACK & SUPPORT CENTER ENDPOINTS
+// ==========================================
+// 1. Submit feedback (with auto tech diagnostics & AI analysis)
+app.post('/api/feedback', async (req: Request, res: Response) => {
+  try {
+    const {
+      userId = 'default_user',
+      userName = 'Người dùng OmniPlan',
+      userEmail,
+      isAnonymous = false,
+      allowContact = true,
+      rating = 5,
+      title,
+      content,
+      category = 'other',
+      module = 'Khác',
+      attachments = [],
+      techInfo
+    } = req.body;
+
+    if (!title || !content) {
+      return res.status(400).json({ error: 'Tiêu đề và nội dung phản hồi không được để trống.' });
+    }
+
+    // AI Analysis (Sentiment, Priority, Summary, Key Themes)
+    const aiAnalysis = await feedbackIntelligence.analyzeFeedback(title, content, module);
+
+    const feedback = db.submitFeedback({
+      userId,
+      userName,
+      userEmail,
+      isAnonymous,
+      allowContact,
+      rating,
+      title,
+      content,
+      category,
+      module,
+      attachments,
+      techInfo,
+      priority: aiAnalysis.suggestedPriority || 'medium',
+      aiAnalysis
+    });
+
+    res.json({
+      success: true,
+      code: feedback.code,
+      message: 'Cảm ơn bạn đã đồng hành cùng OmniPlan! Mỗi góp ý của bạn đều giúp chúng mình tốt hơn mỗi ngày.',
+      feedback
+    });
+  } catch (e: any) {
+    console.error('Error in /api/feedback:', e);
+    res.status(500).json({ error: e.message || 'Lỗi gửi phản hồi.' });
+  }
+});
+
+// 2. User's feedbacks
+app.get('/api/feedback/my', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const list = db.getUserFeedbacks(userId);
+  res.json(list);
+});
+
+// 3. Feedback detail & replies
+app.get('/api/feedback/:id', (req: Request, res: Response) => {
+  const fb = db.getFeedbackById(req.params.id);
+  if (!fb) return res.status(404).json({ error: 'Không tìm thấy phản hồi.' });
+  const replies = db.getFeedbackReplies(req.params.id);
+  res.json({ feedback: fb, replies });
+});
+
+// 4. Add reply (user or admin)
+app.post('/api/feedback/:id/reply', (req: Request, res: Response) => {
+  const feedbackId = req.params.id;
+  const { senderId = 'default_user', senderRole = 'user', senderName = 'Bạn', message } = req.body;
+
+  if (!message || !message.trim()) {
+    return res.status(400).json({ error: 'Nội dung phản hồi không được để trống.' });
+  }
+
+  const reply = db.addFeedbackReply({
+    feedbackId,
+    senderId,
+    senderRole,
+    senderName,
+    message: message.trim()
+  });
+
+  res.json(reply);
+});
+
+// 5. Admin feedbacks list with stats & filters
+app.get('/api/admin/feedbacks', (req: Request, res: Response) => {
+  const { status, category, priority, search } = req.query;
+  const list = db.getAllFeedbacks({
+    status: status as string,
+    category: category as string,
+    priority: priority as string,
+    search: search as string
+  });
+
+  // Calculate statistics
+  const total = list.length;
+  const avgRating = total > 0
+    ? Number((list.reduce((sum, f) => sum + f.rating, 0) / total).toFixed(1))
+    : 5.0;
+
+  const statusCounts: Record<string, number> = {};
+  const categoryCounts: Record<string, number> = {};
+  const priorityCounts: Record<string, number> = {};
+
+  for (const f of list) {
+    statusCounts[f.status] = (statusCounts[f.status] || 0) + 1;
+    categoryCounts[f.category] = (categoryCounts[f.category] || 0) + 1;
+    priorityCounts[f.priority] = (priorityCounts[f.priority] || 0) + 1;
+  }
+
+  res.json({
+    feedbacks: list,
+    stats: {
+      total,
+      avgRating,
+      statusCounts,
+      categoryCounts,
+      priorityCounts
+    }
+  });
+});
+
+// 6. Admin update feedback status, priority, internal notes
+app.put('/api/admin/feedbacks/:id', (req: Request, res: Response) => {
+  const updated = db.updateFeedback(req.params.id, req.body);
+  if (!updated) return res.status(404).json({ error: 'Không tìm thấy phản hồi' });
+  res.json(updated);
+});
+
+// 7. Admin merge feedbacks
+app.post('/api/admin/feedbacks/merge', (req: Request, res: Response) => {
+  const { targetId, sourceId } = req.body;
+  if (!targetId || !sourceId) {
+    return res.status(400).json({ error: 'Cần cung cấp targetId và sourceId' });
+  }
+  const ok = db.mergeFeedbacks(targetId, sourceId);
+  res.json({ success: ok });
+});
+
+// 8. Admin AI Weekly Digest
+app.get('/api/admin/feedback-intelligence/weekly', (req: Request, res: Response) => {
+  const all = db.getAllFeedbacks();
+  const features = db.getFeatureRequests();
+  const digest = feedbackIntelligence.generateWeeklyDigest(all, features);
+  res.json(digest);
+});
+
+// 9. Admin AI Similar Feedbacks search
+app.get('/api/admin/feedbacks/:id/similar', (req: Request, res: Response) => {
+  const target = db.getFeedbackById(req.params.id);
+  if (!target) return res.status(404).json({ error: 'Không tìm thấy phản hồi' });
+  const all = db.getAllFeedbacks();
+  const similar = feedbackIntelligence.findSimilarFeedbacks(target, all);
+  res.json({ similar });
+});
+
+// 10. Community Feature Voting & Roadmap
+app.get('/api/community/features', (req: Request, res: Response) => {
+  const features = db.getFeatureRequests();
+  res.json(features);
+});
+
+app.post('/api/community/features', (req: Request, res: Response) => {
+  const { title, description, category = 'feature_request', module = 'Khác', submittedBy = 'Người dùng' } = req.body;
+  if (!title || !description) {
+    return res.status(400).json({ error: 'Tiêu đề và mô tả không được để trống.' });
+  }
+  const feat = db.addFeatureRequest({
+    title,
+    description,
+    category,
+    module,
+    submittedBy
+  });
+  res.json(feat);
+});
+
+app.post('/api/community/features/:id/vote', (req: Request, res: Response) => {
+  const { userId = 'default_user' } = req.body;
+  const result = db.voteFeatureRequest(req.params.id, userId);
+  res.json(result);
+});
+
+// 11. Product Changelogs
+app.get('/api/community/changelogs', (req: Request, res: Response) => {
+  const changelogs = db.getChangelogs();
+  res.json(changelogs);
+});
+
+// 12. User Badges (Beta Tester Program)
+app.get('/api/user/badges', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const badges = db.getUserBadges(userId);
+  res.json(badges);
+});
+
+// 13. Notifications
+app.get('/api/notifications', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const notifs = db.getNotifications(userId);
+  res.json(notifs);
+});
+
+app.put('/api/notifications/:id/read', (req: Request, res: Response) => {
+  const userId = (req.body.userId as string) || 'default_user';
+  const ok = db.markNotificationRead(req.params.id, userId);
+  res.json({ success: ok });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 OmniPlan Life OS Backend is running on http://localhost:${PORT}`);
 });

@@ -94,3 +94,4 @@ ZALO_BOT_SECRET_KEY=your_zalo_bot_secret_key_here
 - [x] **Zalo Natural Language & 2-way Sync**: Nhận lệnh chi tiêu từ Zalo, tự động ghi sổ tài chính vào App.
 - [x] **Cross-Domain Intelligence**: Tự động phát hiện khi người dùng có nhiều việc gấp nhưng thiếu nước uống, đưa ra khuyến nghị cân bằng công việc - sức khỏe.
 - [x] **Proactive AI**: Sinh bản tin Daily Briefing và Night Review chuẩn xác.
+

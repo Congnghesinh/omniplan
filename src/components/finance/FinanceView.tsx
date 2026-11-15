@@ -358,3 +358,4 @@ export const FinanceView: React.FC<FinanceViewProps> = ({
     </div>
   );
 };
+
