@@ -523,6 +523,51 @@ app.post('/api/learning/flashcards', (req: Request, res: Response) => {
   res.json(card);
 });
 
+// ==========================================
+// 12. OMNISEARCH & OMNIGOALS
+// ==========================================
+app.get('/api/search', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const q = ((req.query.q as string) || '').toLowerCase().trim();
+
+  if (!q) {
+    return res.json({ tasks: [], transactions: [], flashcards: [], memories: [] });
+  }
+
+  const tasks = db.getTasks(userId).filter(t => t.title.toLowerCase().includes(q));
+  const transactions = db.getTransactions(userId).filter(t =>
+    (t.note || '').toLowerCase().includes(q) || t.category.toLowerCase().includes(q)
+  );
+  const flashcards = db.getFlashcards(userId).filter(f =>
+    f.front.toLowerCase().includes(q) || f.back.toLowerCase().includes(q)
+  );
+  const memories = db.getMemories(userId).filter(m =>
+    m.key.toLowerCase().includes(q) || m.value.toLowerCase().includes(q)
+  );
+
+  res.json({ tasks, transactions, flashcards, memories });
+});
+
+app.get('/api/goals', (req: Request, res: Response) => {
+  const userId = (req.query.userId as string) || 'default_user';
+  const profile = db.getUserProfile(userId);
+  const memories = db.getMemories(userId).filter(m => m.type === 'goal');
+  const budgets = db.getBudgets(userId);
+
+  res.json({
+    healthGoals: {
+      waterGoalMl: profile.waterGoalMl,
+      calorieGoal: profile.calorieGoal
+    },
+    financialGoals: budgets.map(b => ({
+      category: b.category,
+      targetLimit: b.limitAmount,
+      spent: b.spentAmount
+    })),
+    customGoals: memories
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 OmniPlan Life OS Backend is running on http://localhost:${PORT}`);
 });

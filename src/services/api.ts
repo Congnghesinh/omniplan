@@ -318,5 +318,16 @@ export const ApiService = {
       body: JSON.stringify({ userId, front, back, subjectId })
     });
     return res.json();
+  },
+
+  // 12. OmniSearch & OmniGoals
+  async globalSearch(query: string, userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/search?q=${encodeURIComponent(query)}&userId=${encodeURIComponent(userId)}`);
+    return res.json();
+  },
+
+  async getGoals(userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/goals?userId=${encodeURIComponent(userId)}`);
+    return res.json();
   }
 };
