@@ -1,16 +1,58 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read and write their own data
+    // 1. Users can read and write their own data
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     match /users/{userId}/{allSubcollections=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
-    // Zalo Connections mapping
+
+    // 2. Zalo Connections mapping
     match /zalo_connections/{connectionId} {
       allow read, write: if request.auth != null;
+    }
+
+    // 3. Feedbacks & Support (Users read/create their own feedbacks, Admins have full access)
+    match /feedbacks/{feedbackId} {
+      allow create: if request.auth != null || resource == null; // Allow anonymous or authenticated submission
+      allow read: if request.auth != null && (resource.data.userId == request.auth.uid || request.auth.token.admin == true);
+      allow update, delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /feedback_replies/{replyId} {
+      allow read, create: if request.auth != null;
+    }
+
+    // 4. Community Feature Requests & Voting (Public read, authenticated submit & vote)
+    match /feature_requests/{featureId} {
+      allow read: if true;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null; // Upvoting
+      allow delete: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // 5. Product Changelogs & Roadmap (Public read, Admin write)
+    match /changelogs/{logId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /product_roadmap/{itemId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // 6. Beta Badges & Notifications
+    match /beta_badges/{badgeId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    match /feedback_notifications/{notifId} {
+      allow read, update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow create: if request.auth != null;
     }
   }
 }

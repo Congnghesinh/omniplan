@@ -15,7 +15,15 @@ import {
   Flashcard,
   StudyPlanItem,
   CourseSubject,
-  ChatMessage
+  ChatMessage,
+  FeedbackItem,
+  FeedbackReply,
+  FeatureRequestItem,
+  ProductChangelog,
+  BetaBadge,
+  AppNotification,
+  FeedbackStatus,
+  FeedbackPriority
 } from '../../src/types/index.js';
 import { PERSONALITY_PRESETS } from '../ai/personality.js';
 
@@ -101,6 +109,12 @@ export interface AppDatabaseSchema {
   wallets: Record<string, WalletItem[]>; // userId -> wallets
   flashcards: Record<string, Flashcard[]>; // userId -> flashcards
   studyPlans: Record<string, StudyPlanItem[]>; // userId -> study plans
+  feedbacks: Record<string, FeedbackItem>; // id -> feedback
+  feedbackReplies: Record<string, FeedbackReply[]>; // feedbackId -> replies
+  featureRequests: FeatureRequestItem[];
+  changelogs: ProductChangelog[];
+  userBadges: Record<string, BetaBadge[]>; // userId -> badges
+  notifications: Record<string, AppNotification[]>; // userId -> notifications
 }
 
 export class DBService {
@@ -349,6 +363,235 @@ export class DBService {
             durationMinutes: 25,
             completed: false,
             technique: 'pomodoro'
+          }
+        ]
+      },
+      feedbacks: {
+        fb_demo_1: {
+          id: 'fb_demo_1',
+          code: 'FB-2026-1042',
+          userId: 'default_user',
+          userName: 'Phạm Tuấn',
+          userEmail: 'user@omniplan.ai',
+          isAnonymous: false,
+          allowContact: true,
+          rating: 5,
+          title: 'Đồng bộ Zalo Bot rất mượt mà và tiện lợi!',
+          content: 'Mình vừa trải nghiệm nhắn tin thêm chi tiêu và nhắc uống nước qua Zalo Bot, dữ liệu lập tức xuất hiện trên Web App. Giao diện rái cá mầm xanh nhìn rất dễ thương và gần gũi.',
+          category: 'zalo_sync',
+          module: 'Zalo Bot',
+          status: 'resolved',
+          priority: 'medium',
+          techInfo: {
+            appVersion: '2.0.0-beta',
+            browser: 'Chrome 131',
+            os: 'Windows 11',
+            deviceType: 'Desktop',
+            timestamp: `${today}T08:00:00Z`,
+            module: 'Zalo Bot',
+            currentPath: '/settings'
+          },
+          aiAnalysis: {
+            summary: 'Khen ngợi trải nghiệm đồng bộ 2 chiều Zalo Bot và giao diện linh vật mầm xanh.',
+            sentiment: 'positive',
+            suggestedCategory: 'Đồng bộ Zalo',
+            suggestedPriority: 'low',
+            keyThemes: ['Zalo Bot', 'Đồng bộ', 'Giao diện']
+          },
+          createdAt: `${today}T08:05:00Z`,
+          updatedAt: `${today}T09:00:00Z`
+        },
+        fb_demo_2: {
+          id: 'fb_demo_2',
+          code: 'FB-2026-2189',
+          userId: 'default_user',
+          userName: 'Phạm Tuấn',
+          isAnonymous: false,
+          allowContact: true,
+          rating: 4,
+          title: 'Đề xuất thêm đồng bộ 2 chiều với Google Calendar',
+          content: 'Hiện tại mình quản lý deadline rất tốt nhưng muốn các sự kiện và bài kiểm tra trên OmniPlan tự động đồng bộ sang Google Calendar trên điện thoại.',
+          category: 'google_calendar',
+          module: 'Công việc',
+          status: 'planned',
+          priority: 'high',
+          techInfo: {
+            appVersion: '2.0.0-beta',
+            browser: 'Chrome 131',
+            os: 'Windows 11',
+            deviceType: 'Desktop',
+            timestamp: `${today}T09:30:00Z`,
+            module: 'Công việc',
+            currentPath: '/work'
+          },
+          aiAnalysis: {
+            summary: 'Yêu cầu tính năng đồng bộ 2 chiều lịch hẹn công việc và học tập sang Google Calendar.',
+            sentiment: 'positive',
+            suggestedCategory: 'Đề xuất tính năng',
+            suggestedPriority: 'high',
+            keyThemes: ['Google Calendar', 'Đồng bộ', 'Deadline']
+          },
+          createdAt: `${today}T09:35:00Z`,
+          updatedAt: `${today}T10:00:00Z`
+        }
+      },
+      feedbackReplies: {
+        fb_demo_1: [
+          {
+            id: 'rep_1',
+            feedbackId: 'fb_demo_1',
+            senderId: 'admin_omni',
+            senderRole: 'admin',
+            senderName: 'OmniPlan Core Team',
+            message: 'Cảm ơn bạn Tuấn rất nhiều! Đội ngũ OmniPlan sẽ tiếp tục cải tiến tốc độ phản hồi và hỗ trợ thêm nhận diện giọng nói qua Zalo trong bản cập nhật tới nhé 🦦🌱.',
+            createdAt: `${today}T09:00:00Z`
+          }
+        ],
+        fb_demo_2: [
+          {
+            id: 'rep_2',
+            feedbackId: 'fb_demo_2',
+            senderId: 'admin_omni',
+            senderRole: 'admin',
+            senderName: 'OmniPlan Product Team',
+            message: 'Chào bạn, đề xuất này đã được đưa vào Roadmap phiên bản tiếp theo (In Progress). Cảm ơn bạn đã đóng góp ý tưởng xuất sắc!',
+            createdAt: `${today}T10:00:00Z`
+          }
+        ]
+      },
+      featureRequests: [
+        {
+          id: 'feat_1',
+          title: 'Đồng bộ 2 chiều với Google Calendar & Outlook',
+          description: 'Tự động đẩy lịch trình học tập, deadline công việc sang Google Calendar và kéo sự kiện về OmniDaily.',
+          category: 'google_calendar',
+          module: 'Công việc',
+          submittedBy: 'Phạm Tuấn',
+          votesCount: 38,
+          votedUserIds: ['default_user', 'user_2', 'user_3'],
+          status: 'in_progress',
+          createdAt: `${today}T08:00:00Z`,
+          targetRelease: 'v2.1.0'
+        },
+        {
+          id: 'feat_2',
+          title: 'Quét hóa đơn siêu thị dài nhiều mục (Multi-item Receipt)',
+          description: 'Hỗ trợ nhận diện hóa đơn siêu thị dài, tự động bóc tách từng mặt hàng và gán danh mục riêng lẻ.',
+          category: 'performance',
+          module: 'Tài chính',
+          submittedBy: 'Mai Linh',
+          votesCount: 24,
+          votedUserIds: ['user_4', 'user_5'],
+          status: 'planned',
+          createdAt: `${today}T07:30:00Z`,
+          targetRelease: 'v2.2.0'
+        },
+        {
+          id: 'feat_3',
+          title: 'Gợi ý bài tập cá nhân hóa bằng mô hình Leitner nâng cao',
+          description: 'Tự động tính toán xác suất quên của não bộ theo đường cong Ebbinghaus để nhắc ôn tập đúng thời điểm.',
+          category: 'ai_assistant',
+          module: 'Học tập',
+          submittedBy: 'Minh Hoàng',
+          votesCount: 19,
+          votedUserIds: ['default_user'],
+          status: 'under_review',
+          createdAt: `${today}T06:00:00Z`
+        }
+      ],
+      changelogs: [
+        {
+          version: 'v2.0.0 Beta',
+          releaseDate: today,
+          title: 'Ra mắt OmniPlan Beta & Trợ lý Đa phương thức Zalo Bot',
+          tag: 'Major',
+          highlights: [
+            'Tích hợp OmniAI và đồng bộ 2 chiều với Zalo Bot Platform chính thức.',
+            'Ra mắt Trung tâm Góp ý & Báo lỗi (Feedback & Support Center) với linh vật rái cá mầm xanh.',
+            'Bổ sung tính năng bình chọn Roadmap cộng đồng và chương trình huy hiệu Beta Tester.',
+            'Quản lý 4 trụ cột cuộc sống: Sức khỏe, Học tập, Công việc, Tài chính cá nhân.'
+          ]
+        },
+        {
+          version: 'v1.9.0',
+          releaseDate: '2026-11-01',
+          title: 'Nâng cấp Giao diện & Đa tính cách AI Persona',
+          tag: 'Improvement',
+          highlights: [
+            'Hỗ trợ 11 tính cách AI phong phú với thanh trượt cảm xúc.',
+            'Tích hợp nhận diện món ăn tính calo và đọc hóa đơn biên lai.',
+            'Bổ sung bộ nhớ dài hạn OmniMemory phân tầng.'
+          ]
+        }
+      ],
+      userBadges: {
+        default_user: [
+          {
+            id: 'b_1',
+            key: 'early_supporter',
+            name: 'Early Supporter',
+            description: 'Người dùng đồng hành cùng OmniPlan từ những ngày đầu thử nghiệm.',
+            icon: '🌟',
+            unlocked: true,
+            unlockedAt: `${today}T07:00:00Z`
+          },
+          {
+            id: 'b_2',
+            key: 'beta_tester',
+            name: 'Beta Tester',
+            description: 'Thành viên chính thức của chương trình trải nghiệm OmniPlan Beta.',
+            icon: '🧪',
+            unlocked: true,
+            unlockedAt: `${today}T07:00:00Z`
+          },
+          {
+            id: 'b_3',
+            key: 'idea_contributor',
+            name: 'Idea Contributor',
+            description: 'Đã đóng góp ý tưởng giá trị được đưa vào kế hoạch phát triển (Roadmap).',
+            icon: '💡',
+            unlocked: true,
+            unlockedAt: `${today}T10:00:00Z`
+          },
+          {
+            id: 'b_4',
+            key: 'bug_hunter',
+            name: 'Bug Hunter',
+            description: 'Góp phần phát hiện và báo cáo lỗi kỹ thuật giúp hoàn thiện sản phẩm.',
+            icon: '🐛',
+            unlocked: false
+          },
+          {
+            id: 'b_5',
+            key: 'community_builder',
+            name: 'Community Builder',
+            description: 'Tích cực tham gia bình chọn và xây dựng cộng đồng OmniPlan.',
+            icon: '🤝',
+            unlocked: true,
+            unlockedAt: `${today}T08:30:00Z`
+          }
+        ]
+      },
+      notifications: {
+        default_user: [
+          {
+            id: 'notif_1',
+            userId: 'default_user',
+            title: 'Admin đã trả lời góp ý của bạn',
+            message: 'Đội ngũ OmniPlan đã phản hồi góp ý "Đồng bộ Zalo Bot rất mượt mà". Hãy nhấn để xem chi tiết!',
+            type: 'feedback_reply',
+            read: false,
+            referenceId: 'fb_demo_1',
+            createdAt: `${today}T09:00:00Z`
+          },
+          {
+            id: 'notif_2',
+            userId: 'default_user',
+            title: '🎉 Mở khóa huy hiệu Idea Contributor',
+            message: 'Chúc mừng bạn! Ý tưởng "Đồng bộ 2 chiều với Google Calendar" của bạn đã được đưa vào Roadmap.',
+            type: 'badge',
+            read: false,
+            createdAt: `${today}T10:00:00Z`
           }
         ]
       }
@@ -785,5 +1028,298 @@ export class DBService {
     action.status = 'undone';
     this.scheduleSave();
     return { success: true, message: `Đã hoàn tác: ${action.description}` };
+  }
+
+  // ==========================================
+  // FEEDBACK & SUPPORT CENTER METHODS
+  // ==========================================
+  public submitFeedback(feedback: Omit<FeedbackItem, 'id' | 'code' | 'createdAt' | 'updatedAt' | 'status'>): FeedbackItem {
+    if (!this.db.feedbacks) {
+      this.db.feedbacks = {};
+    }
+    const randNum = Math.floor(1000 + Math.random() * 9000);
+    const code = `FB-2026-${randNum}`;
+    const id = `fb_${Date.now()}_${randNum}`;
+
+    const item: FeedbackItem = {
+      ...feedback,
+      id,
+      code,
+      status: 'received',
+      priority: feedback.priority || 'medium',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    this.db.feedbacks[id] = item;
+
+    // Check if user should unlock Bug Hunter or Idea Contributor badge
+    if (item.category === 'bug_report') {
+      this.unlockBadge(item.userId, 'bug_hunter');
+    }
+
+    // Notify Admin via system notification
+    this.addNotification('admin_omni', {
+      userId: 'admin_omni',
+      title: `Phản hồi mới: [${item.code}] ${item.title}`,
+      message: `Người dùng ${item.isAnonymous ? 'Ẩn danh' : item.userName} vừa gửi góp ý cho module ${item.module}. Đánh giá: ${item.rating}/5 sao.`,
+      type: 'feedback_status',
+      referenceId: id
+    });
+
+    this.scheduleSave();
+    return item;
+  }
+
+  public getUserFeedbacks(userId: string = 'default_user'): FeedbackItem[] {
+    if (!this.db.feedbacks) return [];
+    return Object.values(this.db.feedbacks)
+      .filter(f => f.userId === userId)
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  public getAllFeedbacks(filters?: { status?: string; category?: string; priority?: string; search?: string }): FeedbackItem[] {
+    if (!this.db.feedbacks) return [];
+    let list = Object.values(this.db.feedbacks);
+
+    if (filters) {
+      if (filters.status && filters.status !== 'all') {
+        list = list.filter(f => f.status === filters.status);
+      }
+      if (filters.category && filters.category !== 'all') {
+        list = list.filter(f => f.category === filters.category);
+      }
+      if (filters.priority && filters.priority !== 'all') {
+        list = list.filter(f => f.priority === filters.priority);
+      }
+      if (filters.search) {
+        const q = filters.search.toLowerCase();
+        list = list.filter(f =>
+          f.title.toLowerCase().includes(q) ||
+          f.content.toLowerCase().includes(q) ||
+          f.code.toLowerCase().includes(q) ||
+          f.module.toLowerCase().includes(q)
+        );
+      }
+    }
+
+    return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  public getFeedbackById(id: string): FeedbackItem | undefined {
+    return this.db.feedbacks?.[id];
+  }
+
+  public updateFeedback(id: string, updates: Partial<FeedbackItem>): FeedbackItem | null {
+    if (!this.db.feedbacks?.[id]) return null;
+    const current = this.db.feedbacks[id];
+    const prevStatus = current.status;
+
+    const updated = {
+      ...current,
+      ...updates,
+      updatedAt: new Date().toISOString()
+    };
+    this.db.feedbacks[id] = updated;
+
+    // If status changed, notify user
+    if (updates.status && updates.status !== prevStatus && !updated.isAnonymous) {
+      this.addNotification(updated.userId, {
+        userId: updated.userId,
+        title: `Cập nhật trạng thái phản hồi [${updated.code}]`,
+        message: `Phản hồi "${updated.title}" của bạn đã chuyển sang trạng thái: ${this.formatStatusLabel(updates.status)}.`,
+        type: 'feedback_status',
+        referenceId: id
+      });
+    }
+
+    this.scheduleSave();
+    return updated;
+  }
+
+  public mergeFeedbacks(targetId: string, sourceId: string): boolean {
+    if (!this.db.feedbacks?.[targetId] || !this.db.feedbacks?.[sourceId]) return false;
+    const source = this.db.feedbacks[sourceId];
+    source.status = 'declined';
+    source.internalNotes = `[Đã gộp vào phản hồi ${this.db.feedbacks[targetId].code}] ${source.internalNotes || ''}`;
+    source.mergedIntoId = targetId;
+    source.updatedAt = new Date().toISOString();
+
+    // Copy replies from source to target
+    const sourceReplies = this.db.feedbackReplies?.[sourceId] || [];
+    if (!this.db.feedbackReplies[targetId]) {
+      this.db.feedbackReplies[targetId] = [];
+    }
+    sourceReplies.forEach(r => {
+      this.db.feedbackReplies[targetId].push({
+        ...r,
+        feedbackId: targetId,
+        message: `[Từ phản hồi gộp ${source.code}]: ${r.message}`
+      });
+    });
+
+    this.scheduleSave();
+    return true;
+  }
+
+  public getFeedbackReplies(feedbackId: string): FeedbackReply[] {
+    return this.db.feedbackReplies?.[feedbackId] || [];
+  }
+
+  public addFeedbackReply(reply: Omit<FeedbackReply, 'id' | 'createdAt'>): FeedbackReply {
+    if (!this.db.feedbackReplies) {
+      this.db.feedbackReplies = {};
+    }
+    if (!this.db.feedbackReplies[reply.feedbackId]) {
+      this.db.feedbackReplies[reply.feedbackId] = [];
+    }
+
+    const item: FeedbackReply = {
+      ...reply,
+      id: `rep_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      createdAt: new Date().toISOString()
+    };
+    this.db.feedbackReplies[reply.feedbackId].push(item);
+
+    // If reply is from admin, notify user
+    const fb = this.getFeedbackById(reply.feedbackId);
+    if (fb && reply.senderRole === 'admin' && !fb.isAnonymous) {
+      this.addNotification(fb.userId, {
+        userId: fb.userId,
+        title: `Phản hồi mới từ Admin cho [${fb.code}]`,
+        message: `${reply.senderName}: "${item.message.slice(0, 100)}..."`,
+        type: 'feedback_reply',
+        referenceId: fb.id
+      });
+    }
+
+    this.scheduleSave();
+    return item;
+  }
+
+  // Feature Requests & Voting
+  public getFeatureRequests(): FeatureRequestItem[] {
+    return this.db.featureRequests || [];
+  }
+
+  public addFeatureRequest(item: Omit<FeatureRequestItem, 'id' | 'createdAt' | 'votesCount' | 'votedUserIds' | 'status'>): FeatureRequestItem {
+    if (!this.db.featureRequests) {
+      this.db.featureRequests = [];
+    }
+    const feat: FeatureRequestItem = {
+      ...item,
+      id: `feat_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      votesCount: 1,
+      votedUserIds: ['default_user'],
+      status: 'under_review',
+      createdAt: new Date().toISOString()
+    };
+    this.db.featureRequests.unshift(feat);
+
+    // Unlock Idea Contributor badge
+    this.unlockBadge('default_user', 'idea_contributor');
+
+    this.scheduleSave();
+    return feat;
+  }
+
+  public voteFeatureRequest(featureId: string, userId: string = 'default_user'): { success: boolean; votesCount: number; hasVoted: boolean } {
+    if (!this.db.featureRequests) return { success: false, votesCount: 0, hasVoted: false };
+    const feat = this.db.featureRequests.find(f => f.id === featureId);
+    if (!feat) return { success: false, votesCount: 0, hasVoted: false };
+
+    if (!feat.votedUserIds) feat.votedUserIds = [];
+
+    const hasVoted = feat.votedUserIds.includes(userId);
+    if (hasVoted) {
+      // Unvote
+      feat.votedUserIds = feat.votedUserIds.filter(uid => uid !== userId);
+      feat.votesCount = Math.max(0, feat.votesCount - 1);
+    } else {
+      // Vote
+      feat.votedUserIds.push(userId);
+      feat.votesCount += 1;
+      this.unlockBadge(userId, 'community_builder');
+    }
+
+    this.scheduleSave();
+    return { success: true, votesCount: feat.votesCount, hasVoted: !hasVoted };
+  }
+
+  // Changelogs
+  public getChangelogs(): ProductChangelog[] {
+    return this.db.changelogs || [];
+  }
+
+  // User Badges
+  public getUserBadges(userId: string = 'default_user'): BetaBadge[] {
+    return this.db.userBadges?.[userId] || this.db.userBadges?.['default_user'] || [];
+  }
+
+  public unlockBadge(userId: string, badgeKey: string): boolean {
+    if (!this.db.userBadges) this.db.userBadges = {};
+    if (!this.db.userBadges[userId]) {
+      this.db.userBadges[userId] = this.db.userBadges['default_user'] || [];
+    }
+    const badge = this.db.userBadges[userId].find(b => b.key === badgeKey);
+    if (badge && !badge.unlocked) {
+      badge.unlocked = true;
+      badge.unlockedAt = new Date().toISOString();
+      this.addNotification(userId, {
+        userId,
+        title: `🎉 Mở khóa huy hiệu: ${badge.name}`,
+        message: `Bạn đã mở khóa huy hiệu "${badge.name}" (${badge.icon})! ${badge.description}`,
+        type: 'badge'
+      });
+      this.scheduleSave();
+      return true;
+    }
+    return false;
+  }
+
+  // Notifications
+  public getNotifications(userId: string = 'default_user'): AppNotification[] {
+    return (this.db.notifications?.[userId] || []).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
+  }
+
+  public addNotification(userId: string, notif: Omit<AppNotification, 'id' | 'createdAt' | 'read'>): AppNotification {
+    if (!this.db.notifications) this.db.notifications = {};
+    if (!this.db.notifications[userId]) this.db.notifications[userId] = [];
+
+    const item: AppNotification = {
+      ...notif,
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      read: false,
+      createdAt: new Date().toISOString()
+    };
+    this.db.notifications[userId].unshift(item);
+    this.scheduleSave();
+    return item;
+  }
+
+  public markNotificationRead(notifId: string, userId: string = 'default_user'): boolean {
+    if (!this.db.notifications?.[userId]) return false;
+    const notif = this.db.notifications[userId].find(n => n.id === notifId);
+    if (notif) {
+      notif.read = true;
+      this.scheduleSave();
+      return true;
+    }
+    return false;
+  }
+
+  private formatStatusLabel(status: FeedbackStatus): string {
+    switch (status) {
+      case 'received': return 'Đã tiếp nhận';
+      case 'reviewing': return 'Đang xem xét';
+      case 'in_progress': return 'Đang xử lý';
+      case 'resolved': return 'Đã giải quyết';
+      case 'planned': return 'Đã đưa vào kế hoạch phát triển';
+      case 'need_info': return 'Cần thêm thông tin';
+      case 'declined': return 'Không thực hiện';
+      default: return status;
+    }
   }
 }

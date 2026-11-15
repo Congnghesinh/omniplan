@@ -329,5 +329,124 @@ export const ApiService = {
   async getGoals(userId: string = 'default_user') {
     const res = await fetch(`${API_BASE}/goals?userId=${encodeURIComponent(userId)}`);
     return res.json();
+  },
+
+  // 13. Feedback & Support Center
+  async submitFeedback(payload: any) {
+    const res = await fetch(`${API_BASE}/feedback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Lỗi gửi phản hồi.');
+    }
+    return res.json();
+  },
+
+  async getUserFeedbacks(userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/feedback/my?userId=${encodeURIComponent(userId)}`);
+    return res.json();
+  },
+
+  async getFeedbackDetail(feedbackId: string) {
+    const res = await fetch(`${API_BASE}/feedback/${feedbackId}`);
+    return res.json();
+  },
+
+  async replyFeedback(feedbackId: string, replyData: { senderId?: string; senderRole?: 'admin' | 'user'; senderName?: string; message: string }) {
+    const res = await fetch(`${API_BASE}/feedback/${feedbackId}/reply`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(replyData)
+    });
+    return res.json();
+  },
+
+  async getAdminFeedbacks(filters?: { status?: string; category?: string; priority?: string; search?: string }) {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    if (filters?.category) params.append('category', filters.category);
+    if (filters?.priority) params.append('priority', filters.priority);
+    if (filters?.search) params.append('search', filters.search);
+
+    const res = await fetch(`${API_BASE}/admin/feedbacks?${params.toString()}`);
+    return res.json();
+  },
+
+  async updateAdminFeedback(id: string, updates: any) {
+    const res = await fetch(`${API_BASE}/admin/feedbacks/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(updates)
+    });
+    return res.json();
+  },
+
+  async mergeFeedbacks(targetId: string, sourceId: string) {
+    const res = await fetch(`${API_BASE}/admin/feedbacks/merge`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ targetId, sourceId })
+    });
+    return res.json();
+  },
+
+  async getWeeklyFeedbackDigest() {
+    const res = await fetch(`${API_BASE}/admin/feedback-intelligence/weekly`);
+    return res.json();
+  },
+
+  async getSimilarFeedbacks(feedbackId: string) {
+    const res = await fetch(`${API_BASE}/admin/feedbacks/${feedbackId}/similar`);
+    return res.json();
+  },
+
+  async getFeatureRequests() {
+    const res = await fetch(`${API_BASE}/community/features`);
+    return res.json();
+  },
+
+  async submitFeatureRequest(payload: { title: string; description: string; category?: string; module?: string; submittedBy?: string }) {
+    const res = await fetch(`${API_BASE}/community/features`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    return res.json();
+  },
+
+  async voteFeatureRequest(featureId: string, userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/community/features/${featureId}/vote`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    return res.json();
+  },
+
+  async getChangelogs() {
+    const res = await fetch(`${API_BASE}/community/changelogs`);
+    return res.json();
+  },
+
+  async getUserBadges(userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/user/badges?userId=${encodeURIComponent(userId)}`);
+    return res.json();
+  },
+
+  async getNotifications(userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/notifications?userId=${encodeURIComponent(userId)}`);
+    return res.json();
+  },
+
+  async markNotificationRead(notifId: string, userId: string = 'default_user') {
+    const res = await fetch(`${API_BASE}/notifications/${notifId}/read`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId })
+    });
+    return res.json();
   }
 };

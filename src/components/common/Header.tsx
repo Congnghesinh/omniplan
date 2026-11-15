@@ -1,18 +1,22 @@
 import React from 'react';
-import { Bot, Bell, Sparkles, MessageCircle, Moon, Sun, Smartphone } from 'lucide-react';
+import { Bot, Bell, Sparkles, MessageCircle, Moon, Sun, Smartphone, MessageSquarePlus } from 'lucide-react';
 
 interface HeaderProps {
   currentTabLabel: string;
   onOpenChat: () => void;
   onOpenZaloModal: () => void;
+  onOpenFeedbackModal: () => void;
   zaloLinked: boolean;
+  unreadCount?: number;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   currentTabLabel,
   onOpenChat,
   onOpenZaloModal,
-  zaloLinked
+  onOpenFeedbackModal,
+  zaloLinked,
+  unreadCount = 0
 }) => {
   const currentDate = new Date().toLocaleDateString('vi-VN', {
     weekday: 'long',
@@ -28,7 +32,31 @@ export const Header: React.FC<HeaderProps> = ({
         <h1 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#103b2d' }}>{currentTabLabel}</h1>
       </div>
 
-      <div className="omni-topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <div className="omni-topbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Global Feedback & Bug Report Button */}
+        <button
+          type="button"
+          onClick={onOpenFeedbackModal}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '7px 14px',
+            borderRadius: '20px',
+            fontSize: '12px',
+            fontWeight: 700,
+            cursor: 'pointer',
+            border: '1px solid #103b2d',
+            background: '#fdfbf7',
+            color: '#103b2d',
+            boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+          }}
+          title="Góp ý & báo lỗi cho OmniPlan Beta"
+        >
+          <span style={{ fontSize: '15px' }}>🦦</span>
+          <span>Góp ý & Báo lỗi</span>
+        </button>
+
         {/* Zalo Sync Status Pill */}
         <button
           type="button"
@@ -37,7 +65,7 @@ export const Header: React.FC<HeaderProps> = ({
             display: 'inline-flex',
             alignItems: 'center',
             gap: '6px',
-            padding: '6px 12px',
+            padding: '7px 12px',
             borderRadius: '20px',
             fontSize: '12px',
             fontWeight: 600,

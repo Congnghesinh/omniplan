@@ -308,3 +308,124 @@ export interface ProactiveReport {
     financialNotice: string;
   };
 }
+
+// ========================
+// 10. FEEDBACK & SUPPORT CENTER
+// ========================
+export type FeedbackCategory =
+  | 'bug_report'           // Báo lỗi
+  | 'feature_request'      // Đề xuất tính năng
+  | 'ui_feedback'          // Góp ý giao diện
+  | 'ai_assistant'         // Góp ý trợ lý AI
+  | 'google_calendar'      // Đồng bộ Google Calendar
+  | 'email_integration'    // Tích hợp Gmail và Outlook
+  | 'zalo_sync'            // Đồng bộ Zalo
+  | 'performance'          // Hiệu suất ứng dụng
+  | 'security_privacy'     // Bảo mật và quyền riêng tư
+  | 'other';               // Ý kiến khác
+
+export type FeedbackStatus =
+  | 'received'             // Đã tiếp nhận
+  | 'reviewing'            // Đang xem xét
+  | 'in_progress'          // Đang xử lý
+  | 'resolved'             // Đã giải quyết
+  | 'planned'              // Đã đưa vào kế hoạch phát triển
+  | 'need_info'            // Cần thêm thông tin
+  | 'declined';            // Không thực hiện
+
+export type FeedbackPriority = 'critical' | 'high' | 'medium' | 'low';
+
+export interface TechDiagnosticInfo {
+  appVersion: string;
+  browser: string;
+  os: string;
+  deviceType: 'Desktop' | 'Mobile' | 'Tablet';
+  timestamp: string;
+  module: string;
+  currentPath: string;
+  errorCode?: string;
+}
+
+export interface FeedbackItem {
+  id: string;
+  code: string; // e.g. FB-2026-8812
+  userId: string;
+  userName: string;
+  userEmail?: string;
+  isAnonymous: boolean;
+  allowContact: boolean;
+  rating: number; // 1 to 5
+  title: string;
+  content: string;
+  category: FeedbackCategory;
+  module: string;
+  attachments?: string[]; // base64 images or URLs
+  techInfo?: TechDiagnosticInfo;
+  status: FeedbackStatus;
+  priority: FeedbackPriority;
+  internalNotes?: string;
+  mergedIntoId?: string;
+  aiAnalysis?: {
+    summary: string;
+    sentiment: 'positive' | 'neutral' | 'negative';
+    suggestedCategory: string;
+    suggestedPriority: FeedbackPriority;
+    keyThemes: string[];
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface FeedbackReply {
+  id: string;
+  feedbackId: string;
+  senderId: string;
+  senderRole: 'admin' | 'user';
+  senderName: string;
+  message: string;
+  createdAt: string;
+}
+
+export interface FeatureRequestItem {
+  id: string;
+  title: string;
+  description: string;
+  category: FeedbackCategory;
+  module: string;
+  submittedBy: string;
+  votesCount: number;
+  votedUserIds: string[];
+  status: 'under_review' | 'planned' | 'in_progress' | 'completed';
+  createdAt: string;
+  targetRelease?: string;
+}
+
+export interface ProductChangelog {
+  version: string;
+  releaseDate: string;
+  title: string;
+  tag: 'Major' | 'Improvement' | 'Fix';
+  highlights: string[];
+}
+
+export interface BetaBadge {
+  id: string;
+  key: 'early_supporter' | 'beta_tester' | 'bug_hunter' | 'idea_contributor' | 'community_builder';
+  name: string;
+  description: string;
+  icon: string;
+  unlocked: boolean;
+  unlockedAt?: string;
+}
+
+export interface AppNotification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'feedback_reply' | 'feedback_status' | 'system' | 'badge';
+  read: boolean;
+  referenceId?: string;
+  createdAt: string;
+}
+

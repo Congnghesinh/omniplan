@@ -1,5 +1,5 @@
 import React from 'react';
-import { LayoutDashboard, GraduationCap, Briefcase, HeartPulse, Wallet, Settings, Bot, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, GraduationCap, Briefcase, HeartPulse, Wallet, Settings, Bot, ChevronRight, MessageSquarePlus } from 'lucide-react';
 
 interface SidebarProps {
   currentTab: string;
@@ -18,6 +18,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'learning', label: 'Học tập', icon: GraduationCap },
     { id: 'work', label: 'Công việc', icon: Briefcase },
     { id: 'finance', label: 'Tài chính', icon: Wallet },
+    { id: 'feedback', label: 'Góp ý & Hỗ trợ', icon: MessageSquarePlus },
     { id: 'settings', label: 'Cài đặt & AI', icon: Settings }
   ];
 
